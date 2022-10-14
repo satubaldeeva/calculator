@@ -2,6 +2,7 @@ import sys
 from typing import Union, Optional
 from PySide6.QtWidgets import QMainWindow, QApplication
 from operator import add, sub, mul, truediv
+
 from design import Ui_MainWindow
 
 operations = {
@@ -64,11 +65,18 @@ class Calculator(QMainWindow):
         self.ui.btn_multy.clicked.connect(lambda: self.add_temp('*'))
         self.ui.btn_div.clicked.connect(lambda: self.add_temp('/'))
 
-    def add_digit(self, btn_text: str) -> None:
+    def add_digit(self, btn_text: str) -> str:
         if self.ui.l_e.text() == '0':
             self.ui.l_e.setText(btn_text)
+            return self.ui.l_e.text()
+
         else:
             self.ui.l_e.setText(self.ui.l_e.text() + btn_text)
+            return self.ui.l_e.text()
+
+    def speedName(self,btn):
+        print(btn.sender)
+        return btn.sender()
 
     def click_btn(self):
         self.ui.btn_1.click()
@@ -99,8 +107,6 @@ class Calculator(QMainWindow):
         return n[:-2] if n[-2:] == '.0' else n
 
     def get_entry_num(self) -> Union[int, float]:
-        print(self.ui.l_e.text().strip('.'))
-        print(self.ui.l_e.text())
         entry = self.ui.l_e.text().strip('.')
         return float(entry) if '.' in entry else int(entry)
 
@@ -117,10 +123,11 @@ class Calculator(QMainWindow):
         if self.ui.lbl_temp.text():
             return self.ui.lbl_temp.text().strip('.').split()[-1]
 
-    def add_temp(self, math_sign: str):
+    def add_temp(self, math_sign: str) -> str:
         if not self.ui.lbl_temp.text() or self.get_math_sign() == '=':
             self.ui.lbl_temp.setText(self.remove_trailing_zeros(self.ui.l_e.text()) + f' {math_sign} ')
             self.ui.l_e.setText('0')
+            return self.ui.lbl_temp.text()
 
     def calculate(self) -> Optional[str]:
         # В ПЕРЕМЕННУЮ ЗАПИСЫВАЕМ,ВСЕ ЧТО НАХОДИТСЯ ВО ВРЕМЕННОЙ СТРОКЕ И В ПОЛЕ ВВОДА
