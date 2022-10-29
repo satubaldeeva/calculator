@@ -12,6 +12,7 @@ import Calculator
 
 was_checked = False
 
+
 def the_button_was_toggled():
     global was_checked
     was_checked = True
@@ -29,13 +30,12 @@ class TestCalculator(unittest.TestCase):
     def test_result_add(self):
         self.assertEqual(result("+", 2, 8), 10)
 
-    def test_result_div(self):
+    def test_result_div_zero(self):
         self.assertEqual(result("/", 10, 2), 5)
         self.assertRaises(ZeroDivisionError, lambda: result("/", 10, 0))
-        # try:
-        #     division(10, 0)
-        # except ZeroDivisionError:
-        #     print("111!")
+
+    def test_result_div(self):
+        self.assertEqual(result("/", 10, 2), 5)
         self.assertRaises(ArithmeticError, lambda: result("/", 10, 0.00000000001))
 
     def test_result_sub(self):
@@ -47,18 +47,15 @@ class TestCalculator(unittest.TestCase):
         with self.assertRaises(Exception):
             result("+", "sd", 23)
 
-    def test_blenderSpeedButtons(self):
+    def test_Buttons(self):
         # Btn_0
         self.form.ui.btn_0.setCheckable(True)
         print(self.form.ui.btn_0.objectName())
-        #self.form.ui.btn_0.clicked.connect()
         self.form.ui.btn_0.click()
         self.assertEqual(self.form.ui.l_e.text(), "0")
-
         #Btn_1
         self.form.ui.btn_1.setCheckable(True)
         print(self.form.ui.btn_1.objectName())
-        #self.form.ui.btn_1.clicked.connect(the_button_was_toggled)
         self.form.ui.btn_1.click()
         self.assertEqual(self.form.ui.l_e.text(), "1")
         self.form.ui.l_e.setText("0")
@@ -69,8 +66,8 @@ class TestCalculator(unittest.TestCase):
         self.form.ui.btn_2.click()
         self.assertEqual(self.form.ui.l_e.text(), "2")
         self.form.ui.l_e.setText("0")
-        #Btn_3
 
+        #Btn_3
         print(self.form.ui.btn_3.objectName())
         self.form.ui.btn_3.click()
         self.assertEqual(self.form.ui.l_e.text(), "3")
@@ -78,7 +75,6 @@ class TestCalculator(unittest.TestCase):
 
         # Btn_4
         print(self.form.ui.btn_4.objectName())
-        #self.form.ui.btn_4.clicked.connect(the_button_was_toggled)
         self.form.ui.btn_4.click()
         self.assertEqual(self.form.ui.l_e.text(), "4")
         self.form.ui.l_e.setText("0")
@@ -90,7 +86,6 @@ class TestCalculator(unittest.TestCase):
         #Btn_6
 
         print(self.form.ui.btn_6.objectName())
-        #self.form.ui.btn_6.clicked.connect(the_button_was_toggled)
         self.form.ui.btn_6.click()
         self.assertEqual(self.form.ui.l_e.text(), "6")
         self.form.ui.l_e.setText("0")
@@ -98,7 +93,6 @@ class TestCalculator(unittest.TestCase):
 
         # Btn_7
         print(self.form.ui.btn_7.objectName())
-        #self.form.ui.btn_7.clicked.connect(the_button_was_toggled)
         self.form.ui.btn_7.click()
         self.assertEqual(self.form.ui.l_e.text(), "7")
         self.form.ui.l_e.setText("0")
@@ -120,7 +114,7 @@ class TestCalculator(unittest.TestCase):
         self.form.ui.lbl_temp.setText("1")
         print(self.form.ui.btn_ce.objectName())
         self.form.ui.btn_ce.click()
-        self.assertEqual(self.form.ui.l_e.text(),"0")
+        self.assertEqual(self.form.ui.l_e.text(), "0")
         self.assertEqual(self.form.ui.lbl_temp.text(), "")
 
         # Btn_clear_entry
@@ -171,6 +165,22 @@ class TestCalculator(unittest.TestCase):
         self.form.ui.l_e.setText("1")
         self.form.ui.btn_res.click()
         self.assertEqual(self.form.ui.l_e.text(), "1")
+
+    #Plus/neg
+        print(self.form.ui.btn_plus_min.objectName())
+        self.form.ui.l_e.setText("1")
+        self.form.ui.btn_plus_min.click()
+        self.assertEqual(self.form.ui.l_e.text(), "-1")
+
+        # backspace
+        print(self.form.ui.btn_backspace.objectName())
+        self.form.ui.l_e.setText("10")
+        self.form.ui.btn_backspace.click()
+        self.assertEqual(self.form.ui.l_e.text(), "1")
+
+        self.form.ui.l_e.setText("-1")
+        self.form.ui.btn_backspace.click()
+        self.assertEqual(self.form.ui.l_e.text(), "0")
 
         #exception
         self.form.ui.l_e.setText("0")

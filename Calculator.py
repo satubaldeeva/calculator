@@ -13,7 +13,7 @@ operations = {
 }
 
 
-def result(sign: str, x: Union[int,float], y: Union[int,float]):
+def result(sign: str, x: Union[int, float], y: Union[int, float]):
     if sign == "+":
         return x + y
     if sign == "-":
@@ -31,7 +31,7 @@ def result(sign: str, x: Union[int,float], y: Union[int,float]):
             raise ZeroDivisionError('Division by zero!')
         except ArithmeticError:
             raise ArithmeticError('Divisor less than 10^(-8)!!')
-    #return "None"
+    # return "None"
 
 
 class Calculator(QMainWindow):
@@ -39,6 +39,7 @@ class Calculator(QMainWindow):
         super(Calculator, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.entry_max_len = self.ui.l_e.maxLength()
 
         # digits
 
@@ -60,12 +61,16 @@ class Calculator(QMainWindow):
 
         # MATH
         self.ui.btn_res.clicked.connect(self.calculate)
+        self.ui.btn_plus_min.clicked.connect(self.negate)
         self.ui.btn_plus.clicked.connect(lambda: self.add_temp('+'))
         self.ui.btn_min.clicked.connect(lambda: self.add_temp('-'))
         self.ui.btn_multy.clicked.connect(lambda: self.add_temp('*'))
         self.ui.btn_div.clicked.connect(lambda: self.add_temp('/'))
 
+        self.ui.btn_backspace.clicked.connect(self.backspace)
+
     def add_digit(self, btn_text: str) -> str:
+        self.clear_temp_if_equality()
         if self.ui.l_e.text() == '0':
             self.ui.l_e.setText(btn_text)
             return self.ui.l_e.text()
@@ -74,9 +79,17 @@ class Calculator(QMainWindow):
             self.ui.l_e.setText(self.ui.l_e.text() + btn_text)
             return self.ui.l_e.text()
 
-    def speedName(self,btn):
+    def speedName(self, btn):
         print(btn.sender)
         return btn.sender()
+
+    def clear_temp_if_equality(self) -> None:
+        if self.get_math_sign() == '=':
+            self.ui.lbl_temp.clear()
+
+    def show_error(self, text: str) -> None:
+        self.ui.l_e.setMaxLength(len(text))
+        self.ui.l_e.setText(text)
 
     def click_btn(self):
         self.ui.btn_1.click()
@@ -86,6 +99,7 @@ class Calculator(QMainWindow):
         return self.ui.lbl_temp.text()
 
     def clear_all(self) -> None:
+        self.clear_temp_if_equality()
         self.ui.l_e.setText("0")
         self.ui.lbl_temp.clear()
 
@@ -94,14 +108,43 @@ class Calculator(QMainWindow):
         self.ui.lbl_temp.setText(str2)
 
     def clear_entry(self) -> None:
+        self.clear_temp_if_equality()
         self.ui.l_e.setText("0")
 
+    def negate(self):
+        self.clear_temp_if_equality()
+        entry = self.ui.l_e.text()
+        if '-' not in entry:
+            if entry != '0':
+                entry = '-' + entry
+        else:
+            entry = entry[1:]
+        if len(entry) == self.entry_max_len + 1 and '-' in entry:
+            self.ui.l_e.setMaxLength(self.entry_max_len + 1)
+        else:
+            self.ui.l_e.setMaxLength(self.entry_max_len)
+
+        self.ui.l_e.setText(entry)
+
+    def backspace(self) -> None:
+        self.clear_temp_if_equality()
+        entry = self.ui.l_e.text()
+
+        if len(entry) != 1:
+            if len(entry) == 2 and '-' in entry:
+                self.ui.l_e.setText('0')
+            else:
+                self.ui.l_e.setText(entry[:-1])
+        else:
+            self.ui.l_e.setText('0')
+
     def add_point(self) -> None:
+        self.clear_temp_if_equality()
         if '.' not in self.ui.l_e.text():
             self.ui.l_e.setText((self.ui.l_e.text() + '.'))
 
     @staticmethod
-    def remove_trailing_zeros(num: str) -> str:
+    def remove_trailing_zeros(num: Union[float, int, str]) -> str:
         n = str(float(num))
         # обрезаются нули,но не все
         return n[:-2] if n[-2:] == '.0' else n
@@ -132,21 +175,30 @@ class Calculator(QMainWindow):
     def calculate(self) -> Optional[str]:
         # В ПЕРЕМЕННУЮ ЗАПИСЫВАЕМ,ВСЕ ЧТО НАХОДИТСЯ ВО ВРЕМЕННОЙ СТРОКЕ И В ПОЛЕ ВВОДА
         entry = self.ui.l_e.text()
+        print(entry)
         temp = self.ui.lbl_temp.text()
         # ЕСЛИ ВО ВРЕМЕННОЙ СТРОКЕ ЕСТЬ ЧТО-ТО
         if temp:
-            # СЧИТАЕМ РЕЗУЛЬТАТ
-            if self.get_math_sign() == '/' and self.get_entry_num() == 0:
-                answer = "None"
-                self.ui.l_e.setText(answer)
-                return answer
-            else:
-                math_sign = self.get_math_sign()
-                answer = self.remove_trailing_zeros(
-                    str(result(self.get_math_sign(), self.get_temp_num(), self.get_entry_num())))
-                self.ui.lbl_temp.setText(temp + self.remove_trailing_zeros(entry) + ' = ')
-                self.ui.l_e.setText(answer)
-                return answer
+            try:
+                # СЧИТАЕМ РЕЗУЛЬТАТ
+
+                ##if self.get_math_sign() == '/' and self.get_entry_num() == 0:
+                #    answer = "None"
+                 #   self.ui.l_e.setText(answer)
+                  #  return answer
+               # else:
+                    answer = self.remove_trailing_zeros(
+                        str(result(self.get_math_sign(), self.get_temp_num(), self.get_entry_num())))
+                    self.ui.lbl_temp.setText(temp + self.remove_trailing_zeros(entry) + ' = ')
+                    self.ui.l_e.setText(answer)
+                    return answer
+            except KeyError:
+                pass
+            except ZeroDivisionError:
+                if self.get_temp_num() == 0:
+                    self.show_error('error')
+                else:
+                    self.show_error('error')
 
     def math_operation(self, math_sign: str):
         temp = self.ui.lbl_temp.text()
